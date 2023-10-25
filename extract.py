@@ -1,17 +1,15 @@
-path = "dados/source/catalogo.csv"
-""" import os
+import os
 import csv
 import tempfile
 import requests
-from zipfile import ZipFile
 import pandas as pd
 
 
-#base_path = os.path.abspath(__file__ + ")
+base_path = os.path.abspath(__file__ + "dados/source/books_sample.csv")
 
-#source_path = ""
+source_path = "dados/source/books_sample.csv"
 
-#raw_path = "dados/raw/catalogo.csv/catalogo.csv"
+raw_path = "dados/raw/catalogo.csv/catalogo.csv"
 
 def create_folder_if_not_exists(path):
   if not os.path.exists(path):
@@ -20,11 +18,8 @@ def create_folder_if_not_exists(path):
 def save_new_raw_data():
   
     create_folder_if_not_exists(raw_path)
-    with tempfile.TemporaryDirectory() as dirpath, ZipFile(source_path, "r") as zipfile:
-        names_list = zipfile.namelist()
-        csv_file_path =zipfile.extract(names_list[0], path=dirpath)
         # Open the CSV file in read mode
-        with open(csv_file_path, mode="r", encoding="utf-8",errors='ignore') as csv_file:
+    with open(source_path, mode="r", encoding="utf-8",errors='ignore') as csv_file:
             reader = csv.DictReader(csv_file)
             
             row = next(reader)  # Get first row from reader
@@ -54,6 +49,7 @@ def save_new_raw_data():
                 'Authors': "Authors",
                 'Image': "Imagens",
                 'Persistent URL': "URL",
+                '': "Extra",
               }
               writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
               writer.writerow(fieldnames)
@@ -61,8 +57,28 @@ def save_new_raw_data():
                 writer.writerow(row)
     return raw_path
 
-def main(): """
-"""  print("[Extract] Start")
+def acessar_id(raw_path, id_choice):
+  try:
+    # Use a função read_csv do pandas para ler o arquivo CSV
+    df = pd.read_csv(raw_path)
+
+    # Verifique se o ID fornecido pelo usuário existe no DataFrame
+    if id_choice in df['Book_ID'].values:
+      # Use o método .loc para acessar o título com base no ID
+      titulo = df.loc[df['Book_ID'] == id_choice, 'Title'].values[0]
+      return titulo
+    else:
+      return "ID não encontrado no arquivo CSV."
+  except Exception as e:
+    return str(e)
+
+
+def main():
+  print("[Extract] Start")
   print(f"[Extract] Saving data from '{source_path}' to '{raw_path}'")
-  save_new_raw_data()
-  print("[Extract] End") """
+  raw_file = save_new_raw_data()
+  print("[Extract] End")
+  id_choice = int(input("Digite o ID do livro que você deseja: "))
+  titulo = acessar_id(raw_file, id_choice)
+
+  print(f"Resultado: {titulo}")
